@@ -1,0 +1,277 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "data.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/8Raouf24/PFE/blob/master/benchmarkRS\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "7FCCmNq3mQYW",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 289
+        },
+        "outputId": "22213ef4-08ba-4e91-9218-7aa02fe77aff"
+      },
+      "source": [
+        "!pip install surprise"
+      ],
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Collecting surprise\n",
+            "  Downloading https://files.pythonhosted.org/packages/61/de/e5cba8682201fcf9c3719a6fdda95693468ed061945493dea2dd37c5618b/surprise-0.1-py2.py3-none-any.whl\n",
+            "Collecting scikit-surprise\n",
+            "\u001b[?25l  Downloading https://files.pythonhosted.org/packages/f5/da/b5700d96495fb4f092be497f02492768a3d96a3f4fa2ae7dea46d4081cfa/scikit-surprise-1.1.0.tar.gz (6.4MB)\n",
+            "\u001b[K     |████████████████████████████████| 6.5MB 7.6MB/s \n",
+            "\u001b[?25hRequirement already satisfied: joblib>=0.11 in /usr/local/lib/python3.6/dist-packages (from scikit-surprise->surprise) (0.15.1)\n",
+            "Requirement already satisfied: numpy>=1.11.2 in /usr/local/lib/python3.6/dist-packages (from scikit-surprise->surprise) (1.18.5)\n",
+            "Requirement already satisfied: scipy>=1.0.0 in /usr/local/lib/python3.6/dist-packages (from scikit-surprise->surprise) (1.4.1)\n",
+            "Requirement already satisfied: six>=1.10.0 in /usr/local/lib/python3.6/dist-packages (from scikit-surprise->surprise) (1.12.0)\n",
+            "Building wheels for collected packages: scikit-surprise\n",
+            "  Building wheel for scikit-surprise (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for scikit-surprise: filename=scikit_surprise-1.1.0-cp36-cp36m-linux_x86_64.whl size=1675733 sha256=66d8b35a634834f036da13d0bee866688ea0704169cfbe119c755ef9778a3f14\n",
+            "  Stored in directory: /root/.cache/pip/wheels/cc/fa/8c/16c93fccce688ae1bde7d979ff102f7bee980d9cfeb8641bcf\n",
+            "Successfully built scikit-surprise\n",
+            "Installing collected packages: scikit-surprise, surprise\n",
+            "Successfully installed scikit-surprise-1.1.0 surprise-0.1\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "f5NDXrN2CtH7",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "import os\n",
+        "import json\n",
+        "import gzip\n",
+        "import pandas as pd\n",
+        "from urllib.request import urlopen\n",
+        "from surprise import BaselineOnly\n",
+        "from surprise import Dataset\n",
+        "from surprise import Reader\n",
+        "from surprise import NormalPredictor\n",
+        "from surprise.model_selection import cross_validate"
+      ],
+      "execution_count": 12,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "feWoOrmt4Tja",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 204
+        },
+        "outputId": "9a7abbe9-07b6-4cd2-ddf0-3d738129d626"
+      },
+      "source": [
+        "!wget http://deepyeti.ucsd.edu/jianmo/amazon/categoryFilesSmall/Video_Games_5.json.gz"
+      ],
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "--2020-07-01 13:39:22--  http://deepyeti.ucsd.edu/jianmo/amazon/categoryFilesSmall/Video_Games_5.json.gz\n",
+            "Resolving deepyeti.ucsd.edu (deepyeti.ucsd.edu)... 169.228.63.50\n",
+            "Connecting to deepyeti.ucsd.edu (deepyeti.ucsd.edu)|169.228.63.50|:80... connected.\n",
+            "HTTP request sent, awaiting response... 200 OK\n",
+            "Length: 154050105 (147M) [application/octet-stream]\n",
+            "Saving to: ‘Video_Games_5.json.gz’\n",
+            "\n",
+            "Video_Games_5.json. 100%[===================>] 146.91M  18.9MB/s    in 8.5s    \n",
+            "\n",
+            "2020-07-01 13:39:31 (17.2 MB/s) - ‘Video_Games_5.json.gz’ saved [154050105/154050105]\n",
+            "\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "7igYuRaV4bF7",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 71
+        },
+        "outputId": "9a0e3064-51f0-4812-c769-ca527142fc00"
+      },
+      "source": [
+        "### load the meta data\n",
+        "\n",
+        "data = []\n",
+        "with gzip.open('Video_Games_5.json.gz') as f:\n",
+        "    for l in f:\n",
+        "        data.append(json.loads(l.strip()))\n",
+        "    \n",
+        "# total length of list, this number equals total number of products\n",
+        "print(len(data))\n",
+        "\n",
+        "# first row of the list\n",
+        "print(data[0])"
+      ],
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "497577\n",
+            "{'overall': 5.0, 'verified': True, 'reviewTime': '10 17, 2015', 'reviewerID': 'A1HP7NVNPFMA4N', 'asin': '0700026657', 'reviewerName': 'Ambrosia075', 'reviewText': \"This game is a bit hard to get the hang of, but when you do it's great.\", 'summary': \"but when you do it's great.\", 'unixReviewTime': 1445040000}\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "knpHP22w4scK",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 85
+        },
+        "outputId": "f832f99f-6458-4a1c-ac31-1fd87840f2ae"
+      },
+      "source": [
+        "# we create a new data frame containing the required informations for our benchmark\n",
+        "\n",
+        "df = pd.DataFrame.from_dict(data)\n",
+        "data_dict = {'userID':df['reviewerID'],'itemID':df['asin'],'rating':df['overall']}\n",
+        "df_rs = pd.DataFrame.from_dict(data_dict)\n",
+        "\n",
+        "print(df_rs.iloc[0])"
+      ],
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "userID    A1HP7NVNPFMA4N\n",
+            "itemID        0700026657\n",
+            "rating                 5\n",
+            "Name: 0, dtype: object\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "LgWrDtZ94w89",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "reader = Reader(rating_scale=(1, 5))\n",
+        "data = Dataset.load_from_df(df_rs, reader)\n"
+      ],
+      "execution_count": 10,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "7Vq32rQd5D9W",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 221
+        },
+        "outputId": "bbd5798c-ba37-41f7-bdd2-670aaddfc617"
+      },
+      "source": [
+        "cross_validate(NormalPredictor(), data, cv=5)"
+      ],
+      "execution_count": 13,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "{'fit_time': (0.7485527992248535,\n",
+              "  0.9184122085571289,\n",
+              "  0.9238014221191406,\n",
+              "  0.9786489009857178,\n",
+              "  0.9521803855895996),\n",
+              " 'test_mae': array([1.13543055, 1.13641775, 1.13264444, 1.13457869, 1.13860631]),\n",
+              " 'test_rmse': array([1.51723302, 1.51884516, 1.51491481, 1.51735845, 1.52130803]),\n",
+              " 'test_time': (1.2860794067382812,\n",
+              "  1.3726043701171875,\n",
+              "  1.3222811222076416,\n",
+              "  1.3150289058685303,\n",
+              "  1.284350872039795)}"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 13
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "6LBLzsFU5LJ_",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "WqZcdGp-5cui",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
