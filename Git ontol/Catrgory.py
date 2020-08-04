@@ -58,8 +58,11 @@ f = open("cat.txt", "w")
 
 for i in range(len(data)):
     print(i)
+    #D'abord je vérifie si mon objet json ( mon item ) contient l'information catégorie
     if 'category' in data[i]:
+        #Si oui , je vérifie si il contient une chaine vide , car en examinant les données j'ai remarqué que desfois dans la case 'category ' il y'avait une 'description ' , et cette description était souvent précedé par cette chaine vide 
         if '' in data[i]['category']:
+            #Donc je ne prends que les sous catégories avant la chaine vide 
             limite = data[i]['category'].index('')
             j = 0
             print(data[i]['category'][0:limite])
